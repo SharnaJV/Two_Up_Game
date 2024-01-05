@@ -14,12 +14,12 @@ def update_results(username, outcome):
     try:
         if outcome == "WIN!":
             query = "UPDATE gameresults SET win_results = win_results + 1 WHERE username = %s"
-            # mycursor.execute("UPDATE gameresults SET win_results = win_results + 1 WHERE username = %s", (username,))
+            mycursor.execute(query, (username,))
         else:
             query = "UPDATE gameresults SET lose_results = lose_results + 1 WHERE username = %s"
-            # mycursor.execute("UPDATE gameresults SET lose_results = lose_results + 1 WHERE username = %s", (username,))
+            mycursor.execute(query, (username,))
         print("Executing query:", query)  # Add this line for debugging purposes
-        mycursor.execute(query, (username,))
+        # mycursor.execute(query, (username,))
     except mysql.connector.Error as error:
         print("Error updating results:", error)
     finally:

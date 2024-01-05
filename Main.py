@@ -8,7 +8,7 @@ def coin_toss():
     return random.choice(['Heads', 'Tails'])
 
 # Setting up of the Two Up game logic without a betting function
-def play_two_up(username, guess):
+def play_two_up(username,guess):
     coin_01 = coin_toss()
     coin_02 = coin_toss()
     result = {
@@ -36,35 +36,42 @@ def play_two_up(username, guess):
         
     return result
 
-def game_screen(username=None):
-
+def game_screen():
+    wins = 0
+    losses = 0
     def play_game():
-        user_guess = prediction.get()
-        username = uname_entry.get()
-        result = play_two_up(username, user_guess)
-        coin_1_label.config(text=result["coin_1"])
-        coin_2_label.config(text=result["coin_2"])
-        outcome_label_01.config(text=result["outcome"]) 
-        outcome_label_02.config(text=result["outcome"])
+        nonlocal wins, losses
+        guess = prediction.get()
+        username = "John" #uname_entry.get()
 
-#Results are pushed to the DB set up in MySQL_Authentication
-        update_results(username, result["outcome"])
+        if username == '':
+            # Display an error message or handle this case
+            print("Please enter a valid username.")
+            return
 
-#Read the updated results and display in the GUI
-        wins, losses = read_results(username)
+        if username and guess:
+            result = play_two_up(username, guess)
+            coin_1_label.config(text=result["coin_1"])
+            coin_2_label.config(text=result["coin_2"])
+            outcome_label_01.config(text=result["outcome"]) 
+            outcome_label_02.config(text=result["outcome"])
+#Update the wins and the losses based on outcome of each round
+            if result["outcome"] == "WIN!":
+                wins += 1
+            else:
+                losses += 1           
+# #Results are pushed to the DB set up in MySQL_Authentication
+            # update_results(username, result["outcome"])
 
-        wins_label.config(text=f"Wins: {wins}")
-        losses_label.config(text=f"Losses: {losses}")
+# #Read the updated results and display in the GUI
+#             wins, losses = read_results(username)
 
-    def username_entry(event):
-        if uname_entry.get() == 'Enter your username':
-            uname_entry.delete(0, "end")
-            uname_entry.config(fg='black')
-
-    def no_username_entry(_):
-        if not uname_entry.get():
-            uname_entry.insert(0, 'Enter your username')
-            uname_entry.config(fg='grey')
+            wins_label.config(text=f"Wins: {wins}")
+            losses_label.config(text=f"Losses: {losses}")
+        else:
+            # Display an error message or handle the case where
+            # username or guess is empty
+            print("Username or guess is empty. Please enter both.")
         
 #Creating the GUI frame        
     two_up_screen = Tk()
@@ -76,12 +83,9 @@ def game_screen(username=None):
     two_up_screen.configure(bg="#EFE0B9")
 
 #Setup of username entry field
-    default_text = 'Enter your username'
+    
     uname_entry = Entry(two_up_screen, bg="#FFFFFF", fg="grey", font=("Arial", 12))
-    uname_entry.insert(0, default_text)
-    uname_entry.bind('<FocusIn>', username_entry)
-    uname_entry.bind('<FocusOut>', no_username_entry)
-    uname_entry.grid(row=0, column=1, padx=10, pady=5)
+    uname_entry.grid(row=0, column=0, padx=10, pady=5)
     
 #User predicts outcome with radio buttons
     prediction = StringVar()
