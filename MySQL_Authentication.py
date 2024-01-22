@@ -32,17 +32,52 @@ def create_tables():
 
 # The program will add 1 to either the wins or losses column depending on the outcome of each round
 def update_results(username, outcome):
+
+#beginning of andre's working code
+    # try:
+    #     with my_db_connect.cursor() as cursor:
+    #         if outcome == "WIN!":
+    #             # Use INSERT to add a new row
+    #             query = "INSERT INTO gameresults (username, win_results, lose_results) VALUES (%s, 1, 0)"
+    #             cursor.execute(query, (username,))
+    #         else:
+    #             # Use INSERT to add a new row
+    #             query = "INSERT INTO gameresults (username, win_results, lose_results) VALUES (%s, 0, 1)"
+    #             cursor.execute(query, (username,))
+    #         print("Executing query:", query)  # Add this line for debugging purposes
+    #     my_db_connect.commit()
+    # except mysql.connector.Error as error:
+    #     print("Error updating results:", error)
+#end of andre's working code
+
     try:
         with my_db_connect.cursor() as cursor:
-            if outcome == "WIN!":
-                # Use INSERT to add a new row
-                query = "INSERT INTO gameresults (username, win_results, lose_results) VALUES (%s, 1, 0)"
-                cursor.execute(query, (username,))
+            # Check if the user already exists in the gameresults table
+            query_check_user = "SELECT * FROM gameresults WHERE username = %s;"
+            cursor.execute(query_check_user, (username,))
+            existing_user = cursor.fetchone()
+
+            if existing_user:
+                # Update the existing row
+                if outcome == "WIN!":
+                    query_update = "UPDATE gameresults SET win_results = win_results + 1 WHERE username = %s;"
+                else:
+                    query_update = "UPDATE gameresults SET lose_results = lose_results + 1 WHERE username = %s;"
+
+                cursor.execute(query_update, (username,))
             else:
-                # Use INSERT to add a new row
-                query = "INSERT INTO gameresults (username, win_results, lose_results) VALUES (%s, 0, 1)"
-                cursor.execute(query, (username,))
-            print("Executing query:", query)  # Add this line for debugging purposes
+                # Insert a new row for the user
+                if outcome == "WIN!":
+                    query_insert = "INSERT INTO gameresults (username, win_results, lose_results) VALUES (%s, 1, 0);"
+                else:
+                    query_insert = "INSERT INTO gameresults (username, win_results, lose_results) VALUES (%s, 0, 1);"
+
+                cursor.execute(query_insert, (username,))
+            # Consume any remaining results
+            cursor.fetchall()
+            
+            print("Executing query:", cursor.statement)  # Add this line for debugging purposes
+
         my_db_connect.commit()
     except mysql.connector.Error as error:
         print("Error updating results:", error)
