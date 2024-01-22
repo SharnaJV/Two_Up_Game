@@ -1,91 +1,109 @@
-import mysql.connector 
+import mysql.connector
 
-#Setting up the connection to MYSQL DB
+# Setting up the connection to MYSQL DB
 my_db_connect = mysql.connector.connect(
-host="127.0.0.1",
-user="root",
-password="Power2thePeopleWho8",
-database="twoupapp"
+    host="localhost",
+    user="root",
+    password="Power2thePeopleWho8",
+    database="twoupapp"
 )
 
-mycursor = my_db_connect.cursor()
-
-mycursor.execute("""
-                CREATE TABLE IF NOT EXISTS gameresults (
-                    id INT AUTO_INCREMENT PRIMARY KEY,
-                    username VARCHAR(45),
-                    win_results INT,
-                    lose_results INT
-                );
-               """)
+def create_tables():
+    with my_db_connect.cursor() as cursor:
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS gameresults (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                username VARCHAR(45),
+                win_results INT,
+                lose_results INT
+            );
+            
+            CREATE TABLE IF NOT EXISTS userlogins (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                username_login VARCHAR(45),
+                password_login VARCHAR(45),
+                email_login VARCHAR(45),
+                first_name VARCHAR(45),
+                last_name VARCHAR(45),
+                employee_id INT
+            );
+        """)
+        my_db_connect.commit()
 
 # The program will add 1 to either the wins or losses column depending on the outcome of each round
 def update_results(username, outcome):
     try:
-        if outcome == "WIN!":
-            query = "INSERT INTO gameresults (username, win_results, lose_results) VALUES (%s, 1, 0)"
-            mycursor.execute(query, (username,))
-        else:
-            query = "INSERT INTO gameresults (username, win_results, lose_results) VALUES (%s, 0, 1)"
-            mycursor.execute(query, (username,))
-        print("Executing query:", query)  # Added this line for debugging purposes
-
+        with my_db_connect.cursor() as cursor:
+            if outcome == "WIN!":
+                # Use INSERT to add a new row
+                query = "INSERT INTO gameresults (username, win_results, lose_results) VALUES (%s, 1, 0)"
+                cursor.execute(query, (username,))
+            else:
+                # Use INSERT to add a new row
+                query = "INSERT INTO gameresults (username, win_results, lose_results) VALUES (%s, 0, 1)"
+                cursor.execute(query, (username,))
+            print("Executing query:", query)  # Add this line for debugging purposes
+        my_db_connect.commit()
     except mysql.connector.Error as error:
         print("Error updating results:", error)
-    finally:
-        my_db_connect.commit()
 
-# The outcome total of the rounds will show in the GUI
+
+#The outcome total of the rounds will show in the GUI
 def read_results(username):
     try:
-        query = "SELECT id, win_results, lose_results FROM gameresults WHERE username = %s"
-        print("Executing query:", query)  # Added this line for debugging purposes
-        mycursor.execute(query, (username,))
-        result = mycursor.fetchone()
-        if result:
-            id, wins, losses = result
-            print("ID: ", id, "Wins: ", wins, "Losses: ", losses)  # Print retrieved wins and losses
-            return wins, losses
-        else:
-            return 0, 0
+        # Extract the value from the Entry widget if it's a Tkinter Entry
+        # username_value = username.get() 
+        with my_db_connect.cursor() as cursor:
+            query = "SELECT  win_results, lose_results FROM gameresults WHERE username = %s"
+            print("Executing query:", query)  # Add this line for debugging purposes
+            cursor.execute(query, (username,))
+            result = cursor.fetchone()
+            if result:
+                wins, losses = result
+                print("Wins:", wins, "Losses:", losses)  
+                return wins, losses
+            else:
+                return  0, 0
     except mysql.connector.Error as error:
-        print("Error reading results: ", error)
-        return None, 0, 0
-    
-    #Defining login function
-def login(username, password):
+        print("Error reading results:", error)
 
-    connection = my_db_connect
-    if connection:
-        cursor = connection.cursor()
-        query = "SELECT * FROM userlogins WHERE username_login = %s AND password_login = %s"
-        cursor.execute(query,(username, password))
-        user = cursor.fetchone()
-        cursor.close()
-        connection.close()
+def login(u1, p1):
+    try:
+        with my_db_connect.cursor() as cursor:
+            query = "SELECT * FROM userlogins WHERE username_login = %s AND password_login = %s"
+            cursor.execute(query, (u1, p1))
+            user = cursor.fetchone()
+            if user:
+                print("Login Success")
+                return True        
+            else:
+                print("Wrong username and/or password!")
+                return False
+    except mysql.connector.Error as error:
+        print("Error during login:", error)
 
-        if user:
-            print("Login Success")
-            return True        
-        else:
-            print("Wrong username and/or password!")
-            return False
-
-def reg_user(username, password, email, first_name, last_name, employee_id):
-    connection = my_db_connect()
-    if connection:
-        cursor = connection.cursor()
-        query = "INSERT INTO userlogins (username_login, password_login, email_login, first_name, last_name, employee_id) VALUES (%s, %s, %s, %s, %s, %s)"
-        values = (username, password, email, first_name, last_name, employee_id)
-        
-        try:
+def reg_user(username_login, password_login, email_login, first_name, last_name, employee_id):
+    try:
+        print("Received values:")
+        print("Username:", username_login)
+        print("Password:", password_login)
+        print("Email:", email_login)
+        print("First Name:", first_name)
+        print("Last Name:", last_name)
+        print("Employee ID:", employee_id)
+        with my_db_connect.cursor() as cursor:
+            query = "INSERT INTO userlogins (username_login, password_login, email_login, first_name, last_name, employee_id) VALUES (%s, %s, %s, %s, %s, %s)"
+            values = (username_login, password_login, email_login, first_name, last_name, employee_id)
             cursor.execute(query, values)
-            connection.commit()
-            cursor.close()
-            connection.close()
+            my_db_connect.commit()
             return True
-        except mysql.connector.Error as err:
-            print(f"Error: {err}")
-            return False
-    else:
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")
         return False
+
+# Example usage
+# create_tables()
+# update_results("user1", "WIN!")
+# read_results("user1")
+# login("user1", "password123")
+# reg_user("user2", "password456", "user2@example.com", "John", "Doe", 789)
