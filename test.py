@@ -28,17 +28,25 @@ result = random.choice(["HEADS", "TAIL"])
 frames = 100
 show_result = False
 
+# Function to render result text and image
 def render_result():
+    global coin_image
     win.fill((0, 0, 0))
-    font = pygame.font.SysFont("calibri", 40)
+    font = pygame.font.SysFont("calibri", 60)
     text = font.render(result, True, (255, 255, 255))
+    
+    # Center text horizontally
     text_x = width // 2 - text.get_width() // 2
-    text_y = height // 2 - image_height - text.get_height() -10
+    
+    # Position text above the coin
+    text_y = height // 2 - image_height // 2 - text.get_height()
+    
     win.blit(text, (text_x, text_y))
     
-    coin_y_position = height // 2 - text.get_height() // 2 + text.get_height() + 10  # Adjust the 10 if necessary
-    win.blit(coin_image, (width // 2 - image_width // 2, coin_y_position))
-    
+    # Adjust the vertical position of the coin to be below the text
+    coin_image = heads_image if result == "HEADS" else tails_image
+    win.blit(coin_image, (width // 2 - image_width // 2, height // 2 - text.get_height() // 2))
+
 
 run = True
 
