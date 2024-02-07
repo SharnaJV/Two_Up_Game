@@ -24,19 +24,14 @@ gravity = 1
 jump_strength = -20
 coin_image = heads_image
 clock = pygame.time.Clock()
-result = random.choice(["HEADS", "TAIL"])
+
 frames = 100
 show_result = False
 
 def render_result():
     win.fill((0, 0, 0))
-    font = pygame.font.SysFont("calibri", 40)
-    text = font.render(result, True, (255, 255, 255))
-    text_x = width // 2 - text.get_width() // 2
-    text_y = height // 2 - image_height - text.get_height() -10
-    win.blit(text, (text_x, text_y))
     
-    coin_y_position = height // 2 - text.get_height() // 2 + text.get_height() + 10  # Adjust the 10 if necessary
+    coin_y_position = height // 2 - image_height // 2
     win.blit(coin_image, (width // 2 - image_width // 2, coin_y_position))
     
 
@@ -56,6 +51,7 @@ while run:
             coin_y = height - heads_image.get_height()
             coin_velocity = jump_strength
             
+            result = random.choice(["HEADS", "TAIL"])
             if coin_image == heads_image:
                 coin_image = tails_image
             else:
@@ -63,7 +59,8 @@ while run:
     
     else:
         if not show_result:
-            render_result()    
+            render_result()   
+             # Add this line 
     
     win.blit(coin_image, (coin_x, coin_y))
     frames -= 1
