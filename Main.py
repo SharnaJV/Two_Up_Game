@@ -2,6 +2,8 @@ from tkinter import *
 import random
 from MySQL_Authentication import *
 
+
+
 # Global variables
 wins = 0
 losses = 0
