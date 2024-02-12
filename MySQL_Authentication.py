@@ -136,9 +136,14 @@ def reg_user(username_login, password_login, email_login, first_name, last_name,
         print(f"Error: {err}")
         return False
 
-# Example usage
-# create_tables()
-# update_results("user1", "WIN!")
-# read_results("user1")
-# login("user1", "password123")
-# reg_user("user2", "password456", "user2@example.com", "John", "Doe", 789)
+def fetch_top_players():
+    try:
+        with my_db_connect.cursor() as cursor:
+            query = "SELECT username, win_results FROM gameresults ORDER BY win_results DESC LIMIT 10"
+            cursor.execute(query)
+            top_players = cursor.fetchall()
+            return top_players
+    except mysql.connector.Error as error:
+        print("Error fetching top players:", error)
+        return []
+

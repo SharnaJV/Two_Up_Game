@@ -2,8 +2,6 @@ from tkinter import *
 import random
 from MySQL_Authentication import *
 
-
-
 # Global variables
 wins = 0
 losses = 0
@@ -93,6 +91,26 @@ def reg_form(root):
     Button(register_screen, text="Register", width=10, height=1, bg="#B7521E", fg="#EFE0B9",
            command=lambda: registration(root)).pack()
 
+def change_colour(two_up_screen):
+    current_colour = two_up_screen.cget("bg")
+    if current_colour == "#EFE0B9":  # Check if the current background color is the original color
+        two_up_screen.configure(bg="black")  # Change to black background
+        set_widget_colour(two_up_screen, "white", "bold")  # Change text color to white and widget borders to bold
+    else:
+        two_up_screen.configure(bg="#EFE0B9")     # Change back to the original background color
+        set_widget_colour(two_up_screen, "black", "")  # Change text color back to black and remove bold from widget borders
+
+def set_widget_colour(widget, fg_color, border_style):
+    if isinstance(widget, (Label, Button, Radiobutton, Entry, Text)):
+        font_style = ("Arial", 10, border_style)
+        widget.config(fg=fg_color, font=font_style)
+    widget.config(bg="black", bd=2, relief="solid", highlightbackground="white")
+    if isinstance(widget, (Label, Button, Radiobutton, Entry, Text, Frame)):
+        widget.config(highlightcolor="white")
+    for child in widget.winfo_children():
+        set_widget_colour(child, fg_color, border_style)
+
+
 def game_screen(root, username):
     global wins, losses
     wins = 0
@@ -135,52 +153,76 @@ def game_screen(root, username):
     two_up_screen = Toplevel(root)
     two_up_screen.title("Two Up")
     two_up_screen.iconbitmap("ANZAC_logo.ico")
-    two_up_screen.geometry("800x450")
+    two_up_screen.geometry("900x500")
     two_up_screen.configure(bg="#EFE0B9")
 
     prediction = StringVar()
 
     two_heads = Radiobutton(two_up_screen, text="Two Heads", variable=prediction, value="Two Heads", bg="#EFE0B9",
                             fg="#B7521E", font=("Arial", 12))
-    two_heads.grid(row=2, column=0, padx=10, pady=5)
+    two_heads.grid(row=1, column=0, padx=10, pady=5)
 
     two_tails = Radiobutton(two_up_screen, text="Two Tails", variable=prediction, value="Two Tails", bg="#EFE0B9",
                             fg="#B7521E", font=("Arial", 12))
-    two_tails.grid(row=2, column=1, padx=10, pady=5)
+    two_tails.grid(row=1, column=1, padx=10, pady=5)
 
     odds_ht = Radiobutton(two_up_screen, text="Odds - (Heads, Tails)", variable=prediction, value="Odds HT",
                           bg="#EFE0B9", fg="#B7521E", font=("Arial", 12))
-    odds_ht.grid(row=2, column=2, padx=10, pady=5)
+    odds_ht.grid(row=1, column=2, padx=10, pady=5)
 
     odds_th = Radiobutton(two_up_screen, text="Odds - (Tails, Heads)", variable=prediction, value="Odds TH",
                           bg="#EFE0B9", fg="#B7521E", font=("Arial", 12))
-    odds_th.grid(row=2, column=3, padx=10, pady=5)
+    odds_th.grid(row=1, column=3, padx=10, pady=5)
 
     coin_1_label = Label(two_up_screen, text="", bg="#EFE0B9", fg="#B7521E", font=("Arial", 16))
-    coin_1_label.grid(row=3, column=1)
+    coin_1_label.grid(row=2, column=1, sticky=N)
 
     coin_2_label = Label(two_up_screen, text="", bg="#EFE0B9", fg="#B7521E", font=("Arial", 16))
-    coin_2_label.grid(row=3, column=2)
+    coin_2_label.grid(row=2, column=2, sticky=N)
+
+        # Initialize Pygame
 
     outcome_label_01 = Label(two_up_screen, text="", bg="#EFE0B9", fg="#B7521E", font=("Arial", 16))
-    outcome_label_01.grid(row=3, column=0)
+    outcome_label_01.grid(row=3, column=0, sticky= N)
 
     outcome_label_02 = Label(two_up_screen, text="", bg="#EFE0B9", fg="#B7521E", font=("Arial", 16))
-    outcome_label_02.grid(row=3, column=3)
+    outcome_label_02.grid(row=3, column=3, sticky= N)
 
-    flip_button = Button(two_up_screen, text="FLIP!", width=15, height=2, bg="#B7521E", fg="#EFE0B9",
+    two_up_screen.rowconfigure(2, weight=1)
+        
+    flip_button = Button(two_up_screen, text="FLIP!", width=15, bg="#B7521E", fg="#EFE0B9",
                          command=play_game)
-    flip_button.grid(row=4, column=2, pady=10)
+    flip_button.grid(row=3, column=2, sticky=N)
 
     wins_label = Label(two_up_screen, text="", bg="#EFE0B9", fg="#B7521E", font=("Arial", 16))
-    wins_label.grid(row=5, column=1)
+    wins_label.grid(row=4, column=1)
 
     losses_label = Label(two_up_screen, text="", bg="#EFE0B9", fg="#B7521E", font=("Arial", 16))
-    losses_label.grid(row=5, column=2)
+    losses_label.grid(row=4, column=2)
 
     username_label = Label(two_up_screen, text=f"Username: {username}", bg="#EFE0B9", fg="#B7521E", font=("Arial", 16))
-    username_label.grid(row=6, column=2)
+    username_label.grid(row=5, column=2)
+    
+#Adding the leaderboard to the GUI
 
+    two_up_screen.columnconfigure(4, weight=1)
+    
+    leaderboard_label = Label(two_up_screen, width= 30, text="Leaderboard", bg="#EFE0B9", fg="#B7521E", font=("Arial", 20), bd=1, relief="solid")
+    leaderboard_label.grid(row=1, column=4, sticky=N+S+E+W)
+
+    leaderboard_text = Text(two_up_screen, height=100, width=30, bg="#E4B04A", fg="#B7521E", font=("Arial", 14), bd=1, relief="solid")
+    leaderboard_text.grid(row=2, column=4, sticky=N+E, rowspan=8)
+
+    top_players = fetch_top_players()  # Function to fetch top players
+    for i, player in enumerate(top_players, 1):
+        leaderboard_text.insert(END, f"{i}. {player[0]} - Wins: {player[1]}\n\n")
+
+    leaderboard_text.config(state=DISABLED)
+    
+#Adding a button that customizes the GUI
+    Button(two_up_screen, text="Change Color", width=10, height=1,
+           bg="#B7521E", fg="#EFE0B9", command=lambda: change_colour(two_up_screen)).grid(row=6, column=2, pady=10)
+    
 def coin_toss():
     return random.choice(['Heads', 'Tails'])
 
