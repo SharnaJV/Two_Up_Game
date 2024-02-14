@@ -1,6 +1,10 @@
 from tkinter import *
+import tkinter as tk
 import random
 from MySQL_Authentication import *
+from PIL import Image, ImageTk
+import threading
+
 
 # Global variables
 wins = 0
@@ -91,26 +95,126 @@ def reg_form(root):
     Button(register_screen, text="Register", width=10, height=1, bg="#B7521E", fg="#EFE0B9",
            command=lambda: registration(root)).pack()
 
-def change_colour(two_up_screen):
-    current_colour = two_up_screen.cget("bg")
-    if current_colour == "#EFE0B9":  # Check if the current background color is the original color
-        two_up_screen.configure(bg="black")  # Change to black background
-        set_widget_colour(two_up_screen, "white", "bold")  # Change text color to white and widget borders to bold
-    else:
-        two_up_screen.configure(bg="#EFE0B9")     # Change back to the original background color
-        set_widget_colour(two_up_screen, "black", "")  # Change text color back to black and remove bold from widget borders
+#Creating the animation function
+def coin_flip_animation(username, prediction, canvas):
+    # dimensions
+    width, height = 100, 180
+    
+    # Load coin images
+    heads_image = Image.open("heads_coin.png")
+    tails_image = Image.open("tails_coin.png")
+    coin_sides = ImageTk.PhotoImage(heads_image), ImageTk.PhotoImage(tails_image)
+    image_width, image_height = 100, 100
+    heads_image = heads_image.resize((image_width, image_height))
+    tails_image = tails_image.resize((image_width, image_height))
+    heads_image = ImageTk.PhotoImage(heads_image)
+    tails_image = ImageTk.PhotoImage(tails_image)
+    
+    coin_x, coin_y = (width // 2) - 65, height // 2
+    coin_velocity = 0
+    gravity = 1
+    jump_strength = -20
+    coin_image = heads_image
 
-def set_widget_colour(widget, fg_color, border_style):
-    if isinstance(widget, (Label, Button, Radiobutton, Entry, Text)):
-        font_style = ("Arial", 10, border_style)
-        widget.config(fg=fg_color, font=font_style)
-    widget.config(bg="black", bd=2, relief="solid", highlightbackground="white")
-    if isinstance(widget, (Label, Button, Radiobutton, Entry, Text, Frame)):
-        widget.config(highlightcolor="white")
+    frames = 100
+    show_result = False
+
+    while frames > 0:
+        coin_velocity += gravity
+        coin_y += coin_velocity
+
+        if coin_y >= height - heads_image.height():
+            coin_y = height - heads_image.height()
+            coin_velocity = jump_strength
+
+            result = random.choice(["HEADS", "TAILS"])
+            if coin_image == heads_image:
+                coin_image = tails_image
+            else:
+                coin_image = heads_image
+
+        # Clear canvas
+        canvas.delete("all")
+        # Render coin image on canvas
+        canvas.create_image(coin_x, coin_y, anchor='nw', image=coin_image)
+
+        frames -= 1
+        canvas.update()
+
+
+
+def draw_coin_flip(win, width, height, heads_image, tails_image):
+    coin_x, coin_y = (width//2) - 65, height//2
+    coin_velocity = 0
+    gravity = 1
+    jump_strength = -20
+    coin_image = heads_image
+    clock = pygame.time.Clock()
+
+    frames = 100
+    show_result = False
+
+    # Function to render result text and image
+
+def run_coin_flip_animation(root, username, prediction, canvas):
+    # Start the animation in a separate thread
+    animation_thread = threading.Thread(target=coin_flip_animation, args=(username, prediction, canvas))
+    animation_thread.start()
+
+#setting up for GUI Customization
+def change_colour(widget):
+    set_widget_colour(widget, "black", "white", "bold")
+    widget.config(bg="black")
     for child in widget.winfo_children():
-        set_widget_colour(child, fg_color, border_style)
+        if isinstance(child, (Radiobutton,)):
+            child.config(fg="white")
+        else:
+            set_text_color(child, "white")
+        
+def set_text_color(widget, color):
+    print("Widget:", widget)
+    if widget.winfo_children():
+        for child in widget.winfo_children():
+            print("Child:", child)
+            set_text_color(child, color)
+    elif isinstance(widget, (Label, Button, Entry, Text)):
+        print("Configuring widget:", widget)
+        widget.config(fg=color)
 
+def original_theme(widget):
+    original_button_color = "#B7521E"  # Set the original button color here
+    
+    widget.config(bg="#EFE0B9")  # Set background color
+    for child in widget.winfo_children():
+        original_theme(child)
+        if isinstance(child, tk.Button):
+            child.config(bg=original_button_color)
 
+def toggle_theme(widget, to_black_and_white):
+    if to_black_and_white:
+        change_colour(widget)
+    else:
+        original_theme(widget)
+        
+def set_widget_colour(widget, bg_colour, fg_colour, border_style):
+    widget.config(bg=bg_colour)  # Set background and foreground color
+    widget.option_add('*background', bg_colour)
+    widget.option_add('*foreground', fg_colour)
+    widget.option_add('*Button*font', ("Arial", 10, border_style, fg_colour))
+    widget.option_add('*Label*font', ("Arial", 10, border_style, fg_colour))
+    widget.option_add('*Text*font', ("Arial", 10, border_style,fg_colour))
+    widget.option_add('*Listbox*font', ("Arial", 10, border_style, fg_colour))
+    widget.option_add('*Entry*font', ("Arial", 10, border_style, fg_colour))
+    widget.option_add('*Scrollbar*background', fg_colour)
+    # Explicitly set foreground color for all other text-related widgets
+    widget.option_add('*Menu*foreground', fg_colour)
+    widget.option_add('*Message*foreground', fg_colour)
+    widget.option_add('*Radiobutton*foreground', fg_colour)
+    
+    # Recursively set background color for all child widgets
+    for child in widget.winfo_children():
+        set_widget_colour(child, bg_colour, fg_colour, border_style)
+    
 def game_screen(root, username):
     global wins, losses
     wins = 0
@@ -180,7 +284,6 @@ def game_screen(root, username):
     coin_2_label = Label(two_up_screen, text="", bg="#EFE0B9", fg="#B7521E", font=("Arial", 16))
     coin_2_label.grid(row=2, column=2, sticky=N)
 
-        # Initialize Pygame
 
     outcome_label_01 = Label(two_up_screen, text="", bg="#EFE0B9", fg="#B7521E", font=("Arial", 16))
     outcome_label_01.grid(row=3, column=0, sticky= N)
@@ -190,9 +293,13 @@ def game_screen(root, username):
 
     two_up_screen.rowconfigure(2, weight=1)
         
-    flip_button = Button(two_up_screen, text="FLIP!", width=15, bg="#B7521E", fg="#EFE0B9",
-                         command=play_game)
-    flip_button.grid(row=3, column=2, sticky=N)
+    flip_button = tk.Button(two_up_screen, text="FLIP!", width=15, bg="#B7521E", fg="#EFE0B9",
+                            command=lambda: run_coin_flip_animation(root, username, prediction, canvas))
+    flip_button.grid(row=4, column=2, sticky="n")
+
+    # Create a Tkinter Canvas widget to display the animation
+    canvas = tk.Canvas(two_up_screen, width=200, height=200)
+    canvas.grid(row=3, column=1)
 
     wins_label = Label(two_up_screen, text="", bg="#EFE0B9", fg="#B7521E", font=("Arial", 16))
     wins_label.grid(row=4, column=1)
@@ -220,8 +327,11 @@ def game_screen(root, username):
     leaderboard_text.config(state=DISABLED)
     
 #Adding a button that customizes the GUI
-    Button(two_up_screen, text="Change Color", width=10, height=1,
-           bg="#B7521E", fg="#EFE0B9", command=lambda: change_colour(two_up_screen)).grid(row=6, column=2, pady=10)
+    change_colour_button = Button(two_up_screen, text="Black and White", width=20, bg="#B7521E", fg="#EFE0B9", command=lambda: toggle_theme(two_up_screen, True))
+    change_colour_button.grid(row=6, column=1, pady=10)
+
+    original_theme_button = Button(two_up_screen, text="Original Theme", width=20, bg="#B7521E", fg="#EFE0B9", command=lambda: toggle_theme(two_up_screen, False))
+    original_theme_button.grid(row=6, column=2, pady=10)
     
 def coin_toss():
     return random.choice(['Heads', 'Tails'])
