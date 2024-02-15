@@ -2,8 +2,7 @@ from tkinter import *
 import tkinter as tk
 import random
 from MySQL_Authentication import *
-from PIL import Image, ImageTk
-import threading
+import subprocess
 
 
 # Global variables
@@ -95,72 +94,6 @@ def reg_form(root):
     Button(register_screen, text="Register", width=10, height=1, bg="#B7521E", fg="#EFE0B9",
            command=lambda: registration(root)).pack()
 
-#Creating the animation function
-def coin_flip_animation(username, prediction, canvas):
-    # dimensions
-    width, height = 100, 180
-    
-    # Load coin images
-    heads_image = Image.open("heads_coin.png")
-    tails_image = Image.open("tails_coin.png")
-    coin_sides = ImageTk.PhotoImage(heads_image), ImageTk.PhotoImage(tails_image)
-    image_width, image_height = 100, 100
-    heads_image = heads_image.resize((image_width, image_height))
-    tails_image = tails_image.resize((image_width, image_height))
-    heads_image = ImageTk.PhotoImage(heads_image)
-    tails_image = ImageTk.PhotoImage(tails_image)
-    
-    coin_x, coin_y = (width // 2) - 65, height // 2
-    coin_velocity = 0
-    gravity = 1
-    jump_strength = -20
-    coin_image = heads_image
-
-    frames = 100
-    show_result = False
-
-    while frames > 0:
-        coin_velocity += gravity
-        coin_y += coin_velocity
-
-        if coin_y >= height - heads_image.height():
-            coin_y = height - heads_image.height()
-            coin_velocity = jump_strength
-
-            result = random.choice(["HEADS", "TAILS"])
-            if coin_image == heads_image:
-                coin_image = tails_image
-            else:
-                coin_image = heads_image
-
-        # Clear canvas
-        canvas.delete("all")
-        # Render coin image on canvas
-        canvas.create_image(coin_x, coin_y, anchor='nw', image=coin_image)
-
-        frames -= 1
-        canvas.update()
-
-
-
-def draw_coin_flip(win, width, height, heads_image, tails_image):
-    coin_x, coin_y = (width//2) - 65, height//2
-    coin_velocity = 0
-    gravity = 1
-    jump_strength = -20
-    coin_image = heads_image
-    clock = pygame.time.Clock()
-
-    frames = 100
-    show_result = False
-
-    # Function to render result text and image
-
-def run_coin_flip_animation(root, username, prediction, canvas):
-    # Start the animation in a separate thread
-    animation_thread = threading.Thread(target=coin_flip_animation, args=(username, prediction, canvas))
-    animation_thread.start()
-
 #setting up for GUI Customization
 def change_colour(widget):
     set_widget_colour(widget, "black", "white", "bold")
@@ -214,6 +147,10 @@ def set_widget_colour(widget, bg_colour, fg_colour, border_style):
     # Recursively set background color for all child widgets
     for child in widget.winfo_children():
         set_widget_colour(child, bg_colour, fg_colour, border_style)
+
+def start_java_animation():
+    # Run the Java animation program
+    subprocess.Popen(["java", "-jar", "CoinFlipAnimation.jar"])
     
 def game_screen(root, username):
     global wins, losses
@@ -292,23 +229,25 @@ def game_screen(root, username):
     outcome_label_02.grid(row=3, column=3, sticky= N)
 
     two_up_screen.rowconfigure(2, weight=1)
+
+    java_animation_button = tk.Button(two_up_screen, text="Start Java Animation", command=start_java_animation)
+    java_animation_button.grid(row=3, column=2, pady=10)
         
     flip_button = tk.Button(two_up_screen, text="FLIP!", width=15, bg="#B7521E", fg="#EFE0B9",
-                            command=lambda: run_coin_flip_animation(root, username, prediction, canvas))
+                            command=play_game)
     flip_button.grid(row=4, column=2, sticky="n")
 
     # Create a Tkinter Canvas widget to display the animation
-    canvas = tk.Canvas(two_up_screen, width=200, height=200)
-    canvas.grid(row=3, column=1)
+
 
     wins_label = Label(two_up_screen, text="", bg="#EFE0B9", fg="#B7521E", font=("Arial", 16))
-    wins_label.grid(row=4, column=1)
+    wins_label.grid(row=5, column=1)
 
     losses_label = Label(two_up_screen, text="", bg="#EFE0B9", fg="#B7521E", font=("Arial", 16))
-    losses_label.grid(row=4, column=2)
+    losses_label.grid(row=5, column=2)
 
     username_label = Label(two_up_screen, text=f"Username: {username}", bg="#EFE0B9", fg="#B7521E", font=("Arial", 16))
-    username_label.grid(row=5, column=2)
+    username_label.grid(row=6, column=2)
     
 #Adding the leaderboard to the GUI
 
@@ -328,10 +267,10 @@ def game_screen(root, username):
     
 #Adding a button that customizes the GUI
     change_colour_button = Button(two_up_screen, text="Black and White", width=20, bg="#B7521E", fg="#EFE0B9", command=lambda: toggle_theme(two_up_screen, True))
-    change_colour_button.grid(row=6, column=1, pady=10)
+    change_colour_button.grid(row=7, column=1, pady=10)
 
     original_theme_button = Button(two_up_screen, text="Original Theme", width=20, bg="#B7521E", fg="#EFE0B9", command=lambda: toggle_theme(two_up_screen, False))
-    original_theme_button.grid(row=6, column=2, pady=10)
+    original_theme_button.grid(row=7, column=2, pady=10)
     
 def coin_toss():
     return random.choice(['Heads', 'Tails'])
