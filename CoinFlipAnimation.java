@@ -6,8 +6,8 @@ import java.awt.event.ActionListener;
 public class CoinFlipAnimation {
 
     // Dimensions
-    private static final int WIDTH = 300;
-    private static final int HEIGHT = 300;
+    private static final int WIDTH = 900;
+    private static final int HEIGHT = 500;
 
     // Load image files
     private static final Image HEADS_IMAGE = Toolkit.getDefaultToolkit().getImage("heads_coin.png");
@@ -30,8 +30,8 @@ public class CoinFlipAnimation {
     private static void createAndShowGUI() {
         JFrame frame = new JFrame("Coin Flip");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(WIDTH, HEIGHT);
-        frame.setResizable(false);
+        frame.setSize(900, 500);
+        
 
         JPanel panel = new JPanel() {
             @Override

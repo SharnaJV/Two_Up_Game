@@ -148,9 +148,36 @@ def set_widget_colour(widget, bg_colour, fg_colour, border_style):
     for child in widget.winfo_children():
         set_widget_colour(child, bg_colour, fg_colour, border_style)
 
-def start_java_animation():
+def start_java_animation(username,prediction, coin_1_label, coin_2_label, outcome_label_01, outcome_label_02, wins_label, losses_label):
+    
     # Run the Java animation program
     subprocess.Popen(["java", "-jar", "CoinFlipAnimation.jar"])
+    root.after(5000, lambda: continue_game_logic(username, prediction, coin_1_label, coin_2_label, outcome_label_01, outcome_label_02, wins_label, losses_label))
+    
+def continue_game_logic(username, prediction, coin_1_label, coin_2_label, outcome_label_01, outcome_label_02, wins_label, losses_label):
+    global wins, losses
+    result = play_two_up(username, prediction)
+
+    coin_1_label.config(text=result["coin_1"])
+    coin_2_label.config(text=result["coin_2"])
+    outcome_label_01.config(text=result["outcome"])
+    outcome_label_02.config(text=result["outcome"])
+
+    if result["outcome"] == "WIN!":
+        wins += 1
+    else:
+        losses += 1
+
+    print("Username:", username)
+    print("Outcome:", result["outcome"])
+    update_results(username, result["outcome"])
+
+    # wins, losses = read_results(username)
+
+    wins_label.config(text=f"Wins: {wins}")
+    losses_label.config(text=f"Losses: {losses}")
+
+    print("Animation finished, continue with the game logic...")
     
 def game_screen(root, username):
     global wins, losses
@@ -168,26 +195,7 @@ def game_screen(root, username):
             return
 
         if p3:
-            result = play_two_up(username, prediction)
-
-            coin_1_label.config(text=result["coin_1"])
-            coin_2_label.config(text=result["coin_2"])
-            outcome_label_01.config(text=result["outcome"])
-            outcome_label_02.config(text=result["outcome"])
-
-            if result["outcome"] == "WIN!":
-                wins += 1
-            else:
-                losses += 1
-
-            print("Username:", username)
-            print("Outcome:", result["outcome"])
-            update_results(username, result["outcome"])
-
-            # wins, losses = read_results(username)
-
-            wins_label.config(text=f"Wins: {wins}")
-            losses_label.config(text=f"Losses: {losses}")
+            start_java_animation(username, prediction, coin_1_label, coin_2_label, outcome_label_01, outcome_label_02, wins_label, losses_label)
         else:
             print("Prediction is empty. Please enter a prediction.")
 
@@ -230,8 +238,8 @@ def game_screen(root, username):
 
     two_up_screen.rowconfigure(2, weight=1)
 
-    java_animation_button = tk.Button(two_up_screen, text="Start Java Animation", command=start_java_animation)
-    java_animation_button.grid(row=3, column=2, pady=10)
+    # java_animation_button = tk.Button(two_up_screen, text="Start Java Animation", command=start_java_animation)
+    # java_animation_button.grid(row=3, column=2, pady=10)
         
     flip_button = tk.Button(two_up_screen, text="FLIP!", width=15, bg="#B7521E", fg="#EFE0B9",
                             command=play_game)
