@@ -15,23 +15,36 @@ public class CoinFlipAnimation {
     private static final int IMAGE_WIDTH = 100;
     private static final int IMAGE_HEIGHT = 100;
 
-    private static int coinX = (WIDTH - IMAGE_WIDTH) / 2;
-    private static int coinY = (HEIGHT - IMAGE_HEIGHT) / 2;
-    private static int coinVelocity = 0;
+    private static final int COIN_COUNT = 2;
+    private static int[] coinX = new int[COIN_COUNT];
+    private static int[] coinY = new int[COIN_COUNT];
+    private static int[] coinVelocity = new int[COIN_COUNT];
     private static int gravity = 1;
     private static int jumpStrength = -20;
-    private static Image coinImage = HEADS_IMAGE;
-    private static int frames = 200; // Increased number of frames
+    private static Image[] coinImage = new Image[COIN_COUNT];
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> createAndShowGUI());
+        SwingUtilities.invokeLater(CoinFlipAnimation::createAndShowGUI);
     }
 
     private static void createAndShowGUI() {
         JFrame frame = new JFrame("Coin Flip");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(900, 500);
-        
+
+        // Coin 1 starts immediately
+        startAnimation(0, frame);
+
+        // Coin 2 starts after a delay of 1 second
+        Timer delayTimer = new Timer(1000, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                startAnimation(1, frame);
+                ((Timer) e.getSource()).stop();
+            }
+        });
+        delayTimer.setRepeats(false);
+        delayTimer.start();
 
         JPanel panel = new JPanel() {
             @Override
@@ -44,25 +57,37 @@ public class CoinFlipAnimation {
 
         frame.setVisible(true);
 
+        // Schedule task to close the JFrame after 5 seconds
+        Timer closeTimer = new Timer(5000, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                frame.dispose(); // Close the JFrame
+            }
+        });
+        closeTimer.setRepeats(false);
+        closeTimer.start();
+    }
+
+    private static void startAnimation(int coinIndex, JFrame frame) {
+        coinX[coinIndex] = (WIDTH / 2) - (IMAGE_WIDTH / 2) + ((coinIndex == 0) ? -100 : 100);
+        coinY[coinIndex] = (HEIGHT - IMAGE_HEIGHT) / 2;
+        coinVelocity[coinIndex] = 0;
+        coinImage[coinIndex] = HEADS_IMAGE;
+
         Timer timer = new Timer(30, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (frames > 1) {
-                    coinVelocity += gravity;
-                    coinY += coinVelocity;
+                coinVelocity[coinIndex] += gravity;
+                coinY[coinIndex] += coinVelocity[coinIndex];
 
-                    if (coinY >= HEIGHT - IMAGE_HEIGHT) {
-                        coinY = HEIGHT - IMAGE_HEIGHT;
-                        coinVelocity = jumpStrength;
+                if (coinY[coinIndex] >= HEIGHT - IMAGE_HEIGHT) {
+                    coinY[coinIndex] = HEIGHT - IMAGE_HEIGHT;
+                    coinVelocity[coinIndex] = jumpStrength;
 
-                        // Toggle the coin image between heads and tails
-                        coinImage = (coinImage == HEADS_IMAGE) ? TAILS_IMAGE : HEADS_IMAGE;
-                    }
-                } else {
-                    ((Timer) e.getSource()).stop();
+                    // Toggle the coin image between heads and tails
+                    coinImage[coinIndex] = (coinImage[coinIndex] == HEADS_IMAGE) ? TAILS_IMAGE : HEADS_IMAGE;
                 }
 
-                frames--;
                 frame.repaint();
             }
         });
@@ -70,8 +95,10 @@ public class CoinFlipAnimation {
     }
 
     private static void drawCoinFlip(Graphics2D g) {
-        g.setColor(Color.WHITE);
+        g.setColor(new Color(0xB7521E));
         g.fillRect(0, 0, WIDTH, HEIGHT);
-        g.drawImage(coinImage, coinX, coinY, IMAGE_WIDTH, IMAGE_HEIGHT, null);
+        for (int i = 0; i < COIN_COUNT; i++) {
+            g.drawImage(coinImage[i], coinX[i], coinY[i], IMAGE_WIDTH, IMAGE_HEIGHT, null);
+        }
     }
 }
