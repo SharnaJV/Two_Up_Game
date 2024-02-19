@@ -115,19 +115,29 @@ def set_text_color(widget, color):
         widget.config(fg=color)
 
 def original_theme(widget):
-    original_button_color = "#B7521E"  # Set the original button color here
-    
+    original_button_colour = "#B7521E" 
+    original_text_colour = "#B7521E" 
+    original_bg_colour = "#B7521E"
+
     widget.config(bg="#EFE0B9")  # Set background color
     for child in widget.winfo_children():
         original_theme(child)
         if isinstance(child, tk.Button):
-            child.config(bg=original_button_color)
+            child.config(bg=original_button_colour)
+        elif isinstance(child, (tk.Label, tk.Entry, tk.Text, tk.Radiobutton)):
+            child.config(fg=original_text_colour)
+        # elif isinstance(child, tk.Text):
+        #     child.configure(bg=original_bg_colour)
 
 def toggle_theme(widget, to_black_and_white):
     if to_black_and_white:
         change_colour(widget)
     else:
         original_theme(widget)
+        original_bg_color = "#E4B04A"  # Set the original background color here
+        for child in widget.winfo_children():
+            if isinstance(child, tk.Text):
+                child.configure(bg=original_bg_color)
         
 def set_widget_colour(widget, bg_colour, fg_colour, border_style):
     widget.config(bg=bg_colour)  # Set background and foreground color
