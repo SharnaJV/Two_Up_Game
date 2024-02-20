@@ -3,7 +3,6 @@ import tkinter as tk
 import random
 from MySQL_Authentication import *
 import subprocess
-from PIL import ImageTk, Image
 
 
 # Global variables
@@ -159,36 +158,18 @@ def set_widget_colour(widget, bg_colour, fg_colour, border_style):
     for child in widget.winfo_children():
         set_widget_colour(child, bg_colour, fg_colour, border_style)
 
-def start_java_animation(username,prediction, coin_1_label, coin_1_text_label, coin_2_label, coin_2_text_label, outcome_label_01, outcome_label_02, wins_label, losses_label):
+def start_java_animation(username,prediction, coin_1_label, coin_2_label, outcome_label_01, outcome_label_02, wins_label, losses_label):
     
     # Run the Java animation program
     subprocess.Popen(["java", "-jar", "CoinFlipAnimation.jar"])
-    root.after(5000, lambda: continue_game_logic(username, prediction, coin_1_label, coin_1_text_label, coin_2_label, coin_2_text_label, outcome_label_01, outcome_label_02, wins_label, losses_label))
+    root.after(5000, lambda: continue_game_logic(username, prediction, coin_1_label, coin_2_label, outcome_label_01, outcome_label_02, wins_label, losses_label))
     
-def continue_game_logic(username, prediction, coin_1_label, coin_1_text_label, coin_2_label, 
-                        coin_2_text_label,  outcome_label_01, outcome_label_02, wins_label, losses_label):
+def continue_game_logic(username, prediction, coin_1_label, coin_2_label, outcome_label_01, outcome_label_02, wins_label, losses_label):
     global wins, losses
     result = play_two_up(username, prediction)
-    heads_image = ImageTk.PhotoImage(Image.open("heads_coin.png"))
-    tails_image = ImageTk.PhotoImage(Image.open("tails_coin.png"))
 
-    # coin_1_text = f"Coin 1: {result['coin_1']}"
-    # coin_2_text = f"Coin 2: {result['coin_2']}"
-
-    if result["coin_1"] == "Heads":
-        coin_1_label.config(image=heads_image)
-        coin_1_text_label.config(text="Heads")
-    else:
-        coin_1_label.config(image=tails_image)
-        coin_1_text_label.config(text="Tails")
-
-    if result["coin_2"] == "Heads":
-        coin_2_label.config(image=heads_image)
-        coin_2_text_label.config(text="Heads")
-    else:
-        coin_2_label.config(image=tails_image)
-        coin_2_text_label.config(text="Tails")
-
+    coin_1_label.config(text=result["coin_1"])
+    coin_2_label.config(text=result["coin_2"])
     outcome_label_01.config(text=result["outcome"])
     outcome_label_02.config(text=result["outcome"])
 
